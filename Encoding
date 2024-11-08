@@ -1,0 +1,201 @@
+const int bitPeriod = 1000;  
+const int maxBits = 20;     
+int bitSequence[maxBits];   
+int bitCount = 0;          
+int t=0; 
+void setup() {
+  Serial.begin(9600);
+  displayMenu();
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    char inputChar = Serial.read();
+    if (inputChar == '1') {
+      Serial.println("Enter bit pattern (e.g., 1011001) followed by ENTER:");
+      readBitPattern();
+      encodeNRZ();
+    } else if (inputChar == '2') {
+      Serial.println("Enter bit pattern (e.g., 1011001) followed by ENTER:");
+      readBitPattern();
+      encodeRZ();
+    } else if (inputChar == '3') {
+      Serial.println("Enter bit pattern (e.g., 1011001) followed by ENTER:");
+      readBitPattern();
+      encodeBipolarNRZ();
+    } else if (inputChar == '4') {
+      Serial.println("Enter bit pattern (e.g., 1011001) followed by ENTER:");
+      readBitPattern();
+      encodeAMI();
+    }
+    else if (inputChar == '5') {
+      Serial.println("Enter bit pattern (e.g., 1011001) followed by ENTER:");
+      readBitPattern();
+      encodeManchester();
+    } else if (inputChar == '6') {
+      Serial.println("Exiting program...");
+      while (true);  
+    } else {
+      Serial.println("Invalid option. Please select from the menu:");
+      displayMenu();
+    }
+  }
+}
+
+// Function to display the menu
+void displayMenu() {
+  Serial.println("Menu:");
+  Serial.println("(1). NRZ Encoding");
+  Serial.println("(2). RZ Encoding");
+  Serial.println("(3). Bipolar NRZ Encoding");
+  Serial.println("(4). AMI Encoding");
+  Serial.println("(5). Manchester Encoding");
+  Serial.println("(6). Exit");
+  Serial.println("Enter your choice:");
+}
+
+void readBitPattern() {
+  while (Serial.available() == 0);  
+  String input = Serial.readStringUntil('\n');
+  input.trim();
+
+  bitCount = 0;  
+  for (int i = 0; i < input.length() && i < maxBits; i++) {
+    if (input[i] == '1' || input[i] == '0') {
+      bitSequence[bitCount++] = input[i] - '0';  
+    }
+  }
+  
+  if (bitCount == 0) {
+    Serial.println("Invalid bit pattern. Please try again.");
+    displayMenu();
+  }
+}
+
+//NRZ Encoding
+void encodeNRZ() {
+  for (int i = 0; i < bitCount; i++) {
+    if (bitSequence[i] == 1) {
+      generateOnes();
+      delay(bitPeriod);
+    } else {
+      generateZeroes();
+      delay(bitPeriod);
+    }
+  }
+  delay(2000);
+  displayMenu();
+}
+
+//Bipolar NRZ Coding
+void encodeBipolarNRZ() {
+  for (int i = 0; i < bitCount; i++) {
+    if (bitSequence[i] == 1) {
+      generateOnes();
+      delay(bitPeriod);
+    } else {
+      generateMones();
+      delay(bitPeriod);
+    }
+  }
+  delay(2000);
+  displayMenu();
+}
+
+//  RZ Encoding
+void encodeRZ() {
+  for (int i = 0; i < bitCount; i++) {
+    if (bitSequence[i] == 1) {
+      generateHalfOnes();
+      delay(bitPeriod / 2);
+      generateHalfZeroes();
+      delay(bitPeriod / 2);
+    } else {
+      Serial.println(0);
+      Serial.println(0);
+      delay(bitPeriod);
+    }
+  }
+  delay(2000);
+  displayMenu();
+}
+
+//AMI Coding
+void encodeAMI() {
+  for (int i = 0; i < bitCount; i++) {
+    if (bitSequence[i] == 1) {
+      if(t==0){
+        generateHalfOnes();
+        delay(bitPeriod);
+        t=1;
+      }
+      else{
+        generateHalfMones();
+        delay(bitPeriod);
+        t=0;
+      }
+    } else {
+      Serial.println(0);
+      delay(bitPeriod);
+    }
+  }
+  delay(2000);
+  displayMenu();
+}
+
+// Manchester Encoding
+void encodeManchester() {
+  for (int i = 0; i < bitCount; i++) {
+    if (bitSequence[i] == 1) {
+      generateHalfOnes();
+      delay(bitPeriod / 2);
+      generateHalfMones();
+      delay(bitPeriod / 2);
+    } else {
+      generateHalfMones();
+      delay(bitPeriod / 2);
+      generateHalfOnes();
+      delay(bitPeriod / 2);
+    }
+  }
+  delay(2000);
+  displayMenu();
+}
+
+//wave generator functions
+
+void generateOnes() {
+  for (int i = 0; i<10; i++) {
+    Serial.println(1);
+  }
+}
+
+void generateHalfOnes() {
+  for(int i = 0; i<5; i++) {
+    Serial.println(1);
+  }
+}
+
+void generateZeroes() {
+  for (int i = 0; i<10; i++) {
+    Serial.println(0);
+  }
+}
+
+void generateHalfZeroes() {
+  for (int i = 0; i<5; i++) {
+    Serial.println(0);
+  }
+}
+
+void generateMones() {
+  for (int i =0; i<10; i++) {
+    Serial.println(-1);
+  }
+}
+
+void generateHalfMones() {
+    for (int i =0; i<5; i++) {
+    Serial.println(-1);
+  }
+}
